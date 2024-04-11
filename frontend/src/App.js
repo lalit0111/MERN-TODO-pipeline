@@ -14,7 +14,7 @@ function App() {
       setIsLoading(true);
 
       try {
-        const response = await fetch('http://localhost/goals');
+        const response = await fetch('http://localhost:2000/goals');
 
         const resData = await response.json();
 
@@ -26,7 +26,7 @@ function App() {
       } catch (err) {
         setError(
           err.message ||
-            'Fetching goals failed - the server responsed with an error.'
+          'Fetching goals failed - the server responsed with an error.'
         );
       }
       setIsLoading(false);
@@ -39,7 +39,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost/goals', {
+      const response = await fetch('http://localhost:2000/goals', {
         method: 'POST',
         body: JSON.stringify({
           text: goalText,
@@ -68,7 +68,7 @@ function App() {
     } catch (err) {
       setError(
         err.message ||
-          'Adding a goal failed - the server responsed with an error.'
+        'Adding a goal failed - the server responsed with an error.'
       );
     }
     setIsLoading(false);
@@ -78,7 +78,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost/goals/' + goalId, {
+      const response = await fetch('http://localhost:2000/goals/' + goalId, {
         method: 'DELETE',
       });
 
@@ -95,7 +95,7 @@ function App() {
     } catch (err) {
       setError(
         err.message ||
-          'Deleting the goal failed - the server responsed with an error.'
+        'Deleting the goal failed - the server responsed with an error.'
       );
     }
     setIsLoading(false);
