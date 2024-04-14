@@ -47,6 +47,15 @@ pipeline {
             }
         }
 
+        stage('Setup kubernetes using ansible') {
+            steps {
+                script {
+                    sh "cd ansible"
+                    sh "ansible-playbook -i inventory/k8.yml playbooks/bootstrap.yml"
+                }
+            }
+        }
+
 
     }
 }
