@@ -3,9 +3,12 @@ pipeline {
     agent {
         label 'jenkins-agent'
     }
-
-    tools {
-        nodejs 'Node21'
+    
+    environment {
+        DOCKER_HUB_USERNAME = 'lalit0111'
+        DOCKER_HUB_PASSWORD = credentials('docker-cred')
+        BACKEND_IMAGE = 'todo-node:latest'
+        FRONTEND_IMAGE = 'todo-react:latest'
     }
 
     stages {
@@ -28,10 +31,22 @@ pipeline {
         stage('Build docker images') {
             steps {
                 script {
-                    sh 'docker build -t todo-node -f backend/Dockerfile backend'
-                    sh 'docker build -t todo-react -f frontend/Dockerfile frontend'
+                    sh "docker build -t ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE} -f backend/Dockerfile backend"
+                    sh "docker build -t ${DOCKER_HUB_USERNAME}/${FRONTEND_IMAGE} -f frontend/Dockerfile frontend"
                 }
             }
         }
+
+        stage('Login and push images') {
+            steps {
+                script {
+                    sh "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+                    sh "docker push ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE}"
+                    sh "docker push ${DOCKER_HUB_USERNAME}/${FRONTEND_IMAGE}"
+                }
+            }
+        }
+
+
     }
 }
