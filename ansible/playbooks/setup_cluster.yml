@@ -1,0 +1,64 @@
+---
+- name: Configure Kubernetes master node
+  hosts: masters
+  become: true
+  tasks:
+    - name: Run kubeadm reset pre-flight checks
+      command: kubeadm reset pre-flight -f
+      register: pre_flight_reset
+      ignore_errors: true
+
+    - name: Display pre-flight reset output
+      debug:
+        var: pre_flight_reset.stdout_lines
+
+    - name: Pull Kubernetes images
+      command: kubeadm config images pull
+
+    - name: Initialize Kubernetes master
+      command: kubeadm init
+
+    - name: Create kube config directory
+      file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+        mode: '0700'
+
+    - name: Copy admin.conf to user's kube config directory
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        remote_src: yes
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
+
+    - name: Apply Calico network plugin
+      command: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/calico.yaml
+
+    - name: Get join command token
+      command: kubeadm token create --print-join-command
+      register: join_command
+
+    - debug:
+        var: join_command.stdout_lines
+
+    - name: Set join command as fact
+      set_fact:
+        join_command: "{{ join_command.stdout }}"
+
+- name: Configure worker node
+  hosts: workers
+  become: true
+  tasks:
+    - name: Run kubeadm reset pre-flight checks
+      command: kubeadm reset pre-flight -f
+      register: pre_flight_reset
+      ignore_errors: true
+
+    - name: Display pre-flight reset output
+      debug:
+        var: pre_flight_reset.stdout_lines
+
+    - name: Join worker node to cluster
+      command: "{{ hostvars[groups['masters'][0]].join_command }}"

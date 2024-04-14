@@ -1,0 +1,3 @@
+ansible_user: ubuntu
+ansible_password: ubuntu
+home_dir: /home/ubuntu

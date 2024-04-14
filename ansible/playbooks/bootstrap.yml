@@ -1,0 +1,5 @@
+- name: Setup machines for kubernetes
+  import_playbook: general_setup.yml
+
+- name: Setup kubernetes cluster
+  import_playbook: setup_cluster.yml

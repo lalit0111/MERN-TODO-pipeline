@@ -1,0 +1,96 @@
+- name: Setup Kubernetes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Disable swap
+      command: swapoff -a
+      ignore_errors: yes
+
+    - name: Load kernel modules at bootup
+      blockinfile:
+        path: /etc/modules-load.d/k8s.conf
+        create: yes
+        block: |
+          overlay
+          br_netfilter
+
+    - name: Load kernel modules
+      modprobe:
+        name: "{{ item }}"
+      loop:
+        - overlay
+        - br_netfilter
+
+    - name: Configure sysctl params
+      copy:
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward = 1
+        dest: /etc/sysctl.d/k8s.conf
+        mode: "0644"
+
+    - name: Apply sysctl params
+      command: sysctl --system
+
+    - name: Install CRIO Runtime
+      block:
+        - name: Check if CRIO GPG key exists
+          stat:
+            path: /etc/apt/keyrings/cri-o-apt-keyring.gpg
+          register: cri_o_key
+
+        - name: Download CRIO GPG key if it doesn't exist
+          shell: curl -fsSL https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/cri-o-apt-keyring.gpg
+          when: not cri_o_key.stat.exists
+
+        - name: Add CRIO repository
+          shell: "echo 'deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/ /' | tee /etc/apt/sources.list.d/cri-o.list"
+
+        - name: Install CRIO package
+          apt:
+            name: cri-o
+            update_cache: yes
+            state: present
+
+        - name: Start CRIO service
+          service:
+            name: crio
+            enabled: yes
+            state: started
+
+      tags: cri-o
+
+    - name: Add Kubernetes APT repository and install required packages
+      block:
+
+        - name: Check if Kubernetes key exists
+          stat:
+            path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+          register: k8s_key
+
+        - name: Add Kubernetes apt repository key
+          shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+          when: not k8s_key.stat.exists
+
+        - name: Add Kubernetes apt repository
+          shell: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+        - name: Install Kubernetes packages
+          apt:
+            name: "{{ item }}"
+            update_cache: yes
+            state: present
+          with_items:
+            - kubelet
+            - kubectl
+            - kubeadm
+            - jq
+
+        - name: Start kubelet service
+          service:
+            name: kubelet
+            enabled: yes
+            state: started
+
+      tags: kubernetes
