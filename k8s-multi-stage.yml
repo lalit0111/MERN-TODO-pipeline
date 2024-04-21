@@ -1,0 +1,116 @@
+---
+# Deployment 1: MongoDB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-db-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-db
+  template:
+    metadata:
+      labels:
+        app: mongo-db
+    spec:
+      containers:
+      - name: mongo-db
+        image: mongo:latest
+        ports:
+          - containerPort: 27017
+
+---
+# Service 1: ClusterIP for MongoDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-db-service
+spec:
+  selector:
+    app: mongo-db
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  type: ClusterIP
+    
+---
+# Deployment 2: Node App
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - name: node
+        env:
+          - name: MONGO_API
+            value: "mongo-db-service"
+        image: lalit0111/todo-node:latest
+        ports:
+          - containerPort: 2000
+
+---
+# Service 2: ClusterIP for Node App
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-service
+spec:
+  selector:
+    app: node
+  ports:
+    - protocol: TCP
+      port: 2000
+      targetPort: 2000
+  type: ClusterIP
+
+---
+# Deployment 3: React App
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react
+  template:
+    metadata:
+      labels:
+        app: react
+    spec:
+      containers:
+      - name: react
+        image: lalit0111/todo-react:latest
+        env:
+          - name: NODE_API
+            value: "node-service"
+        ports:
+          - containerPort: 3000
+
+---
+# Service 3: Load Balancer for React App
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-service
+spec:
+  selector:
+    app: react
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer

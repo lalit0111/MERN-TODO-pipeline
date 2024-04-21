@@ -9,6 +9,7 @@ pipeline {
         DOCKER_HUB_PASSWORD = credentials('docker-cred')
         BACKEND_IMAGE = 'todo-node:latest'
         FRONTEND_IMAGE = 'todo-react:latest'
+        K8S_MASTER_IP = '172.31.47.118'
     }
 
     stages {
@@ -55,6 +56,15 @@ pipeline {
             }
         }
 
+        stage('Start pods, deployments and services') {
+            steps {
+                script {
+                    sh "sudo apt install sshpass -y"
+                    sh "sshpass -p 'ubuntu' scp -o StrictHostKeyChecking=no k8s-multi-stage.yml ubuntu@${K8S_MASTER_IP}:~/"
+                    sh "sshpass -p 'ubuntu' ssh -o StrictHostKeyChecking=no ubuntu@${K8S_MASTER_IP} 'sudo kubectl apply -f ~/k8s-multi-stage.yml'"
+                }
+            }
+        }
 
     }
 }
