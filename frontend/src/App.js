@@ -14,7 +14,7 @@ function App() {
       setIsLoading(true);
 
       try {
-        const response = await fetch('http://localhost:2000/goals');
+        const response = await fetch(`http://${process.env.NODE_API}:2000/goals`);
 
         const resData = await response.json();
 
@@ -39,7 +39,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:2000/goals', {
+      const response = await fetch(`http://${process.env.NODE_API}:2000/goals`, {
         method: 'POST',
         body: JSON.stringify({
           text: goalText,
@@ -78,7 +78,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:2000/goals/' + goalId, {
+      const response = await fetch(`http://${process.env.NODE_API}:2000/goals/` + goalId, {
         method: 'DELETE',
       });
 
