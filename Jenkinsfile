@@ -59,7 +59,6 @@ pipeline {
         stage('Start pods, deployments and services') {
             steps {
                 script {
-                    sh "sudo apt install sshpass -y"
                     sh "sshpass -p 'ubuntu' scp -o StrictHostKeyChecking=no k8s-multi-stage.yml ubuntu@${K8S_MASTER_IP}:~/"
                     sh "sshpass -p 'ubuntu' ssh -o StrictHostKeyChecking=no ubuntu@${K8S_MASTER_IP} 'sudo kubectl apply -f ~/k8s-multi-stage.yml'"
                 }
