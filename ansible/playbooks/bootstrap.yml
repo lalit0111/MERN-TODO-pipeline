@@ -3,3 +3,6 @@
 
 - name: Setup kubernetes cluster
   import_playbook: setup_cluster.yml
+
+- name: Deploy kubernetes cluster
+  import_playbook: deploy.yml

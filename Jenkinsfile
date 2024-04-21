@@ -51,22 +51,9 @@ pipeline {
         stage('Setup kubernetes using ansible') {
             steps {
                 script {
-                    sh "cd ansible; ansible-playbook -i inventory/k8.yml playbooks/bootstrap.yml"
+                    sh "cd ansible; ansible-playbook -i inventory/k8.yml playbooks/bootstrap.yml -v"
                 }
             }
         }
-
-        stage('Start pods, deployments and services') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'a529ab34-add8-4050-85ea-30ec0ea0edcb', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh '''
-                        sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no k8s-multi-stage.yml $USERNAME@${K8S_MASTER_IP}:~/
-                        sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no $USERNAME@${K8S_MASTER_IP} 'sudo kubectl apply -f ~/k8s-multi-stage.yml'
-                    '''
-                }
-                    
-            }
-        }
-
     }
 }
