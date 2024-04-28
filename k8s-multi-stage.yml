@@ -98,7 +98,7 @@ spec:
           - name: NODE_API
             value: "node-service"
         ports:
-          - containerPort: 3000
+          - containerPort: 80
 
 ---
 # Service 3: Load Balancer for React App
@@ -112,5 +112,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 3000
+      targetPort: 80
   type: LoadBalancer
