@@ -114,3 +114,34 @@ spec:
       port: 80
       targetPort: 80
   type: LoadBalancer
+
+---
+# PVs for prometheus
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus-server-pv
+spec:
+  capacity:
+    storage: 8Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: alert-manager-pv
+spec:
+  capacity:
+    storage: 2Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data

@@ -6,3 +6,6 @@
 
 - name: Deploy kubernetes cluster
   import_playbook: deploy.yml
+
+- name: Setup prometheus
+  import_playbook: setup_prometheus.yml
