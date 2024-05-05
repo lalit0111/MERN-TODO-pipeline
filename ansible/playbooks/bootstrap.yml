@@ -9,3 +9,6 @@
 
 - name: Setup prometheus
   import_playbook: setup_prometheus.yml
+
+- name: Setup grafana
+  import_playbook: setup_grafana.yml

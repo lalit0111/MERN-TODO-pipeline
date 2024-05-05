@@ -1,0 +1,19 @@
+- name: Setup grafana
+  hosts: masters
+  become: true
+  tasks:
+    - name: Add grafana repository
+      command: "helm repo add grafana https://grafana.github.io/helm-charts"
+    
+    - name: Update repository
+      command: "helm repo update"
+
+    - name: Add grafana repo
+      command: "helm install grafana grafana/grafana"
+    
+    - name: Expose grafana service
+      command: "kubectl expose service grafana --type=NodePort --target-port=3000 --name=grafana-ext"
+
+    
+    
+    
